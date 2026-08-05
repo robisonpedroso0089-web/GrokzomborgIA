@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrokzomborgIA - Dashboard Avançado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --quantum-primary: #0f0ff0;
+            --quantum-secondary: #00ff88;
+            --quantum-tertiary: #ff00ff;
+            --quantum-dark: #0a0a1a;
+            --quantum-light: #1a1a3a;
+            --quantum-accent: #00ffff;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, var(--quantum-dark) 0%, #1a0a3a 50%, var(--quantum-dark) 100%);
+            color: var(--quantum-secondary);
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, rgba(15, 15, 240, 0.15) 0%, rgba(0, 0, 30, 0.4) 100%);
+            border-right: 2px solid var(--quantum-secondary);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--quantum-secondary);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--quantum-primary), var(--quantum-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--quantum-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 5px;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-left-color: var(--quantum-secondary);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .nav-item.active {
+            background: rgba(15, 15, 240, 0.3);
+            border-left-color: var(--quantum-primary);
+            color: var(--quantum-accent);
+        }
+
+        /* Main Content */
+        .main-content {
+            overflow-y: auto;
+            padding: 30px;
+            background: rgba(10, 10, 26, 0.6);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: var(--quantum-primary);
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(15, 15, 240, 0.15) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border: 2px solid var(--quantum-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: linear-gradient(135deg, rgba(15, 15, 240, 0.25) 0%, rgba(0, 255, 136, 0.2) 100%);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--quantum-accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--quantum-secondary);
+            opacity: 0.8;
+        }
+
+        /* Chat Area */
+        .chat-container {
+            background: linear-gradient(135deg, rgba(15, 15, 240, 0.15) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border: 2px solid var(--quantum-secondary);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--quantum-primary), var(--quantum-tertiary));
+            color: white;
+            border: 2px solid var(--quantum-secondary);
+        }
+
+        .message.ai .message-content {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 255, 0.2));
+            border: 2px solid var(--quantum-secondary);
+            color: var(--quantum-secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 2px solid var(--quantum-secondary);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            background: rgba(10, 10, 26, 0.8);
+            border: 2px solid var(--quantum-secondary);
+            border-radius: 8px;
+            color: var(--quantum-secondary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            border-color: var(--quantum-accent);
+        }
+
+        .chat-send {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--quantum-primary), var(--quantum-tertiary));
+            border: 2px solid var(--quantum-secondary);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .chat-send:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+            transform: scale(1.05);
+        }
+
+        /* Right Sidebar - Stats */
+        .right-sidebar {
+            background: linear-gradient(180deg, rgba(15, 15, 240, 0.15) 0%, rgba(0, 0, 30, 0.4) 100%);
+            border-left: 2px solid var(--quantum-secondary);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            color: var(--quantum-accent);
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            border-bottom: 2px solid var(--quantum-secondary);
+            padding-bottom: 10px;
+        }
+
+        .mini-stat {
+            padding: 12px;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid var(--quantum-secondary);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .mini-stat-label {
+            color: var(--quantum-secondary);
+            opacity: 0.7;
+        }
+
+        .mini-stat-value {
+            color: var(--quantum-accent);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--quantum-secondary);
+            animation: pulse 2s infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 5px var(--quantum-secondary);
+            }
+            50% {
+                opacity: 0.5;
+                box-shadow: 0 0 15px var(--quantum-secondary);
+            }
+        }
+
+        /* Responsivo */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 200px 1fr;
+            }
+
+            .right-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: absolute;
+                left: -250px;
+                height: 100%;
+                z-index: 100;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>⚛️ GROKZOMBORG</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-section="chat">
+                    <span>💬</span> Chat IA
+                </a>
+                <a href="#" class="nav-item" data-section="analytics">
+                    <span>📈</span> Analytics
+                </a>
+                <a href="#" class="nav-item" data-section="settings">
+                    <span>⚙️</span> Configurações
+                </a>
+                <a href="#" class="nav-item" data-section="about">
+                    <span>ℹ️</span> Sobre
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div class="content-section active" id="dashboard">
+                <h2 class="section-title">📊 Dashboard de Controle</h2>
+                <div class="grid-cards">
+                    <div class="stat-card">
+                        <div class="stat-value">99.9%</div>
+                        <div class="stat-label">Disponibilidade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">8 ⚛️</div>
+                        <div class="stat-label">Processadores</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">7</div>
+                        <div class="stat-label">Dimensões Ativas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2.3 TB</div>
+                        <div class="stat-label">Capacidade</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="margin-top: 30px; padding: 30px;">
+                    <h3 style="color: var(--quantum-accent); margin-bottom: 20px;">Status do Sistema</h3>
+                    <p style="margin-bottom: 15px;">
+                        <span class="status-indicator"></span> Quantum Engine: ONLINE
+                    </p>
+                    <p style="margin-bottom: 15px;">
+                        <span class="status-indicator"></span> AI Neural Network: ACTIVE
+                    </p>
+                    <p style="margin-bottom: 15px;">
+                        <span class="status-indicator"></span> Security Protocol: ARMED
+                    </p>
+                    <p>
+                        <span class="status-indicator"></span> Network Sync: SYNCED
+                    </p>
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="content-section" id="chat">
+                <h2 class="section-title">💬 Chat IA Avançado</h2>
+                <div class="chat-container">
+                    <div class="chat-messages">
+                        <div class="message ai">
+                            <div class="message-content">👋 Bem-vindo ao GrokzomborgIA! Como posso ajudar você hoje?</div>
+                        </div>
+                        <div class="message ai">
+                            <div class="message-content">💡 Sou um sistema de IA quântico capaz de processar informações complexas em tempo real.</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" placeholder="Digite sua mensagem aqui..." id="messageInput">
+                        <button class="chat-send" id="sendBtn">Enviar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="content-section" id="analytics">
+                <h2 class="section-title">📈 Analytics & Métricas</h2>
+                <div class="grid-cards">
+                    <div class="stat-card">
+                        <div class="stat-value">45.2K</div>
+                        <div class="stat-label">Requisições/Dia</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2.3ms</div>
+                        <div class="stat-label">Tempo Médio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">127</div>
+                        <div class="stat-label">Usuários Ativos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">98.7%</div>
+                        <div class="stat-label">Taxa de Sucesso</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="content-section" id="settings">
+                <h2 class="section-title">⚙️ Configurações do Sistema</h2>
+                <div class="stat-card" style="padding: 30px;">
+                    <h3 style="color: var(--quantum-accent); margin-bottom: 20px;">Parâmetros Quânticos</h3>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px;">Potência de Processamento</label>
+                        <input type="range" min="0" max="100" value="100" style="width: 100%; cursor: pointer;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px;">Taxa de Sincronização</label>
+                        <input type="range" min="0" max="100" value="99" style="width: 100%; cursor: pointer;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px;">Modo de Segurança</label>
+                        <select style="width: 100%; padding: 8px; background: rgba(10, 10, 26, 0.8); color: var(--quantum-secondary); border: 2px solid var(--quantum-secondary); border-radius: 5px;">
+                            <option>Alto</option>
+                            <option selected>Máximo</option>
+                            <option>Personalizado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="content-section" id="about">
+                <h2 class="section-title">ℹ️ Sobre GrokzomborgIA</h2>
+                <div class="stat-card" style="padding: 30px;">
+                    <h3 style="color: var(--quantum-accent); margin-bottom: 20px;">Versão 2.0 - Dashboard Avançado</h3>
+                    <p style="line-height: 1.8; margin-bottom: 15px;">
+                        GrokzomborgIA é uma plataforma de Inteligência Artificial Quântica que combina processamento avançado com interface visual imersiva.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 15px;">
+                        <strong>Principais Recursos:</strong>
+                    </p>
+                    <ul style="margin-left: 20px;">
+                        <li>🧠 Sistema Neural Adaptativo</li>
+                        <li>⚛️ Motor Quântico de Processamento</li>
+                        <li>🔐 Segurança Criptográfica Avançada</li>
+                        <li>📊 Analytics em Tempo Real</li>
+                        <li>💬 Chat IA Conversacional</li>
+                        <li>🎨 Interface Visual Quântica</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">⚡ Energia</div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">Consumo</div>
+                    <div class="mini-stat-value">2.4 kW</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">Eficiência</div>
+                    <div class="mini-stat-value">96.3%</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">🌐 Rede</div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">Latência</div>
+                    <div class="mini-stat-value">12ms</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">Bandwidth</div>
+                    <div class="mini-stat-value">98.5%</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">🔒 Segurança</div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">Status</div>
+                    <div class="mini-stat-value">✅ Seguro</div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">Ameaças</div>
+                    <div class="mini-stat-value">0/0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(i => i.classList.remove('active'));
+                
+                // Add active class
+                item.classList.add('active');
+                const section = item.dataset.section;
+                document.getElementById(section).classList.add('active');
+            });
+        });
+
+        // Chat functionality
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.querySelector('.chat-messages');
+
+        const aiResponses = [
+            '🤖 Entendido! Processando sua solicitação...',
+            '⚛️ Ativando processadores quânticos...',
+            '💭 Analisando padrões de dados...',
+            '✨ Sistema respondendo com inteligência adaptativa...',
+            '🔮 Consultando dimensões paralelas...',
+            '⚡ Velocidade ultra-rápida ativada!',
+            '🌟 Resultado otimizado encontrado!',
+            '💬 Comunicação estabelecida com êxito!'
+        ];
+
+        function addMessage(text, isUser = false) {
+            const message = document.createElement('div');
+            message.className = `message ${isUser ? 'user' : 'ai'}`;
+            message.innerHTML = `<div class="message-content">${text}</div>`;
+            chatMessages.appendChild(message);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        sendBtn.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (text) {
+                addMessage(text, true);
+                messageInput.value = '';
+                
+                setTimeout(() => {
+                    const response = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+                    addMessage(response);
+                }, 500);
+            }
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+
+        // Welcome message
+        console.log('%c⚛️ Dashboard GrokzomborgIA v2.0 Ativo', 'color: #00ff88; font-size: 16px; font-weight: bold;');
+    </script>
+</body>
+</html>
